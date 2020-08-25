@@ -36,6 +36,17 @@ class Automate:
         src = requests.get(site).text
         soup = BeautifulSoup(src, 'lxml')
         # table = soup.find('table', {'class': 'ui table segment'})
+        return [site+row['href'] for row in soup.findAll("a", href=True)]
+    
+    @classmethod
+    def getUrls(cls):
+        '''
+        get all b.tech r15 results links
+        '''
+        site = 'https://jntuaresults.ac.in/'
+        src = requests.get(site).text
+        soup = BeautifulSoup(src, 'lxml')
+        # table = soup.find('table', {'class': 'ui table segment'})
         return [site+row['href'] for row in soup.findAll("a", href=True) if (("B.Tech" and "R15") in row.text) and ("B.Pharmacy" not in row.text)]
 
     @classmethod
@@ -105,6 +116,7 @@ class Automate:
         except:
             return {'title': headder.text.strip('Title : '), 'data': None}
 
+    
     def getData(self, driver, urls):
         try:
             x = {}
@@ -138,14 +150,20 @@ class Automate:
         # options = Options()
         # options.headless = True
         # driver = webdriver.Chrome(
-        #     executable_path='src\\chromedriver\\chromedriver.exe', options=options)
+        #     executable_path='res\\chromedriver\\chromedriver.exe', options=options)
 
-        urls = Automate.getAllUrls()
+        urls = Automate.getUrls()
         data = self.getData(driver, urls)
 
         print('closing browser')
         driver.quit()
         return data
+
+@app.route('/urls/allUrls')
+def allUrls():
+    x = Automate.getAllUrls()
+    x = x[7:-5]
+    return jsonify(x)
 
 
 @app.route('/<string:rollno>')

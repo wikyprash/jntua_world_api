@@ -23,7 +23,7 @@ def allUrls():
     return jsonify(x)
 
 
-@app.route('/all-attempted-results-data',  methods=['GET'])
+@app.route('/allattemptedresultsdata',  methods=['GET'])
 def result():
     rn = request.args.get('rollno')
     print(rn)

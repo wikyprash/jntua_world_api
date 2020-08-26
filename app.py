@@ -1,163 +1,20 @@
-from flask import Flask, jsonify
-import os
-from bs4 import BeautifulSoup
-from selenium.webdriver.chrome.options import Options
-from selenium import webdriver
-import requests
-import urllib
+from flask import Flask, jsonify, request
+from automate import Automate
 
 
 app = Flask(__name__)
 
 
-class Automate:
-    site = 'https://jntuaresults.ac.in/'
-    status = 'Invalid Hall Ticket Number for the Exam code you have selected.'
+@app.route('/')
+def home():
+    return 'hello world'
 
-    def __init__(self, rollno) -> None:
-        self.rollno = rollno
 
-    @classmethod
-    def connect(cls, host=site):
-        ''' check for internet connection '''
+@app.route('/allResutlsData')
+def allResults():
+    data = Automate.getAllResultsData()
+    return jsonify(data)
 
-        try:
-            urllib.request.urlopen(host)
-            return True
-        except:
-            return False
-
-    @classmethod
-    def getAllUrls(cls):
-        '''
-        get all b.tech r15 results links
-        '''
-        site = 'https://jntuaresults.ac.in/'
-        src = requests.get(site).text
-        soup = BeautifulSoup(src, 'lxml')
-        # table = soup.find('table', {'class': 'ui table segment'})
-        return [site+row['href'] for row in soup.findAll("a", href=True)]
-    
-    @classmethod
-    def getUrls(cls):
-        '''
-        get all b.tech r15 results links
-        '''
-        site = 'https://jntuaresults.ac.in/'
-        src = requests.get(site).text
-        soup = BeautifulSoup(src, 'lxml')
-        # table = soup.find('table', {'class': 'ui table segment'})
-        return [site+row['href'] for row in soup.findAll("a", href=True) if (("B.Tech" and "R15") in row.text) and ("B.Pharmacy" not in row.text)]
-
-    @classmethod
-    def submiCredentials(cls, driver, rollno, e):
-        driver.get(e)
-        field = driver.find_element_by_xpath(
-            '/html/body/div/div[1]/div/div/center/table/tbody/tr/th/center/input[1]')
-        btn = driver.find_element_by_xpath(
-            '/html/body/div/div[1]/div/div/center/table/tbody/tr/th/center/input[2]')
-        # print('enterning roll no')
-        field.send_keys(rollno)
-        # print('button click')
-        btn.click()
-
-        def waitForPageLoad():
-            html = driver.page_source
-            while True:
-                # print('checking for  source')
-                t = driver.page_source
-                if html != t:
-                    # print('source changed')
-                    return 0
-
-        # print('witing for loading')
-        waitForPageLoad()
-        # print('capturing screenshot')
-        # driver.save_screenshot("images\\screenshot.png")
-        return driver.page_source
-
-    @classmethod
-    def userDetails(cls, res):
-        src = res
-        soup = BeautifulSoup(src, 'lxml')
-        user = {}
-        for i in soup.findAll('b'):
-            if i.text == 'Hall Ticket No :':
-                t = {'Hall Ticket No': i.next_sibling[:10].upper()}
-                user.update(t)
-            elif i.text == 'Student name: ':
-                t = {'Student name': i.next_sibling}
-                user.update(t)
-        return user
-
-    @classmethod
-    def userResults(cls, res):
-        src = res
-        soup = BeautifulSoup(src, 'lxml')
-        headder = soup.find('h1', {'class': 'ui info message bxinfo'})
-        table = soup.find('table', {'class': 'ui table segment'})
-        resl = ['Subject Code', 'Subject Name',  'Internals', 'Externals',
-                'Total Marks', 'Result Status', 'Credits', 'Grades']
-
-        try:
-            values = [i.text for i in table.findAll("td")]
-            l = []
-            _from = 0
-            _to = 8
-            for _ in range(len(values)//8):
-                x = {}
-                for i, j in zip(resl, values[_from:_to]):
-                    x[i] = j
-                _from += 8
-                _to += 8
-                l.append(x)
-            data = {'title': headder.text.strip('Title : '), 'data': l}
-            return data
-        except:
-            return {'title': headder.text.strip('Title : '), 'data': None}
-
-    
-    def getData(self, driver, urls):
-        try:
-            x = {}
-            l = []
-            userGoten = 0
-            for i, e in enumerate(urls):
-                print(len(urls) - i)
-                res = Automate.submiCredentials(driver, self.rollno, e)
-                if userGoten == 0:
-                    ud = {'user': Automate.userDetails(res)}
-                    if len(ud['user']) == 2:
-                        x.update(ud)
-                        userGoten += 1
-                ur = Automate.userResults(res)
-                if ur['data'] != None:
-                    l.append(ur)
-            x.update({'results': l})
-            return x
-        except Exception as e:
-            return e
-
-    def start(self):
-        options = Options()
-        options.binary_location = os.environ.get("GOOGLE_CHROME_BIN")
-        options.add_argument("--headless")
-        options.add_argument("--disable-dev-shm-usage")
-        options.add_argument("--no-sandbox")
-        driver = webdriver.Chrome(executable_path=os.environ.get(
-            "CHROMEDRIVER_PATH"), options=options)
-
-        # options = Options()
-        # options.headless = True
-        # driver = webdriver.Chrome(
-        #     executable_path='res\\chromedriver\\chromedriver.exe', options=options)
-
-        urls = Automate.getUrls()
-        data = self.getData(driver, urls)
-
-        print('closing browser')
-        driver.quit()
-        return data
 
 @app.route('/urls/allUrls')
 def allUrls():
@@ -166,12 +23,13 @@ def allUrls():
     return jsonify(x)
 
 
-@app.route('/<string:rollno>')
-def result(rollno):
-    print(rollno)
-    x = Automate(rollno=rollno)
+@app.route('/allResults',  methods=['GET'])
+def result():
+    rn = request.args.get('rollno')
+    print(rn)
+    x = Automate(rollno=rn)
     data = x.start()
-    return jsonify(data)
+    return data
 
 
 if __name__ == "__main__":

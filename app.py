@@ -11,7 +11,7 @@ def home():
 
 
 @app.route('/routes')
-def home():
+def routes():
     return jsonify({
         'routes': {
             '/': 'home route',

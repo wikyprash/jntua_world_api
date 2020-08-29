@@ -10,10 +10,22 @@ def home():
     return 'hello world'
 
 
-@app.route('/allResutlsData')
+@app.route('/routes')
+def home():
+    return jsonify({
+        'routes': {
+            '/': 'home route',
+            '/publishedResult' : 'published results',
+            '/allAttemptedResults' : 'allAttemptedResults',
+            '/urls/allUrls' : 'all r15 urls'
+        }})
+
+@app.route('/publishedResults')
 def allResults():
     data = Automate.getAllResultsData()
-    return jsonify(data)
+    return jsonify({
+        'published_results': data
+    })
 
 
 @app.route('/urls/allUrls')
@@ -23,7 +35,7 @@ def allUrls():
     return jsonify(x)
 
 
-@app.route('/allattemptedresultsdata',  methods=['GET'])
+@app.route('/allAttemptedResults',  methods=['GET'])
 def result():
     rn = request.args.get('rollno')
     print(rn)

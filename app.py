@@ -15,14 +15,15 @@ def routes():
     return jsonify({
         'routes': {
             '/': 'home route',
-            '/publishedResult' : 'published results',
-            '/allAttemptedResults' : 'allAttemptedResults',
-            '/urls/allUrls' : 'all r15 urls'
+            '/publishedResults': 'published results',
+            '/allAttemptedResults': 'allAttemptedResults',
+            '/urls/allUrls': 'all r15 urls'
         }})
+
 
 @app.route('/publishedResults')
 def allResults():
-    data = Automate.getAllResultsData()
+    data = Automate.getPublishedResults()
     return jsonify({
         'published_results': data
     })
@@ -37,9 +38,15 @@ def allUrls():
 
 @app.route('/allAttemptedResults',  methods=['GET'])
 def result():
-    rn = request.args.get('rollno')
-    print(rn)
-    x = Automate(rollno=rn)
+    """
+    usage:
+    .../allAttemptedResults?rollno=<>&course=<>&regulation=<>
+    """
+    rollno = request.args.get('rollno')
+    course = request.args.get('course')
+    regulation = request.args.get('regulation')
+    print(rollno, course, regulation)
+    x = Automate(rollno=rollno, course=course, regulation=regulation)
     data = x.start()
     return data
 

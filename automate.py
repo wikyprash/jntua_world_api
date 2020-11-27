@@ -155,10 +155,11 @@ class Automate:
                 _from += 8
                 _to += 8
                 l.append(x)
-            data = {'title': headder.text.strip('Title : '), 'data': l}
+            data = {str(headder.text.strip('Title : ')): l}
             return data
         except:
-            return {'title': headder.text.strip('Title : '), 'data': None}
+            # return {'title': headder.text.strip('Title : '), 'data': None}
+            return {'title': "--"}
 
     def getData(self, driver, urls):
         try:
@@ -174,26 +175,31 @@ class Automate:
                         x.update(ud)
                         userGoten += 1
                 ur = Automate.userResults(res)
-                if ur['data'] != None:
+                try:
                     l.append(ur)
+                except Exception as identifier:
+                    pass
             x.update({'results': l})
             return x
         except Exception as e:
             return e
 
     def start(self):
-        options = Options()
-        options.binary_location = os.environ.get("GOOGLE_CHROME_BIN")
-        options.add_argument("--headless")
-        options.add_argument("--disable-dev-shm-usage")
-        options.add_argument("--no-sandbox")
-        driver = webdriver.Chrome(executable_path=os.environ.get(
-            "CHROMEDRIVER_PATH"), options=options)
 
+        # print("this driver for heorku")
         # options = Options()
-        # options.headless = True
-        # driver = webdriver.Chrome(
-        #     executable_path='res\\chromedriver.exe', options=options)
+        # options.binary_location = os.environ.get("GOOGLE_CHROME_BIN")
+        # options.add_argument("--headless")
+        # options.add_argument("--disable-dev-shm-usage")
+        # options.add_argument("--no-sandbox")
+        # driver = webdriver.Chrome(executable_path=os.environ.get(
+        #     "CHROMEDRIVER_PATH"), options=options)
+
+        print("this driver for local")
+        options = Options()
+        options.headless = True
+        driver = webdriver.Chrome(
+            executable_path='res/chromedriver', options=options)
 
         urls = Automate.getUrls(course=self.course, regulation=self.regulation)
         print(urls)
@@ -204,6 +210,8 @@ class Automate:
         return data
 
 
-# x = Automate(rollno='193g1a0505', course="B.Tech", regulation="R19")
-# print('calling start')
-# print(x.start())
+if __name__ == "__main__":
+    print("---")
+    x = Automate(rollno='193g1a0505', course="B.Tech", regulation="R19")
+    print('calling start')
+    print(x.start())

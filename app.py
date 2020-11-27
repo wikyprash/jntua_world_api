@@ -45,7 +45,9 @@ def result():
     rollno = request.args.get('rollno')
     course = request.args.get('course')
     regulation = request.args.get('regulation')
+    print("++++++++++")
     print(rollno, course, regulation)
+    print("++++++++++")
     x = Automate(rollno=rollno, course=course, regulation=regulation)
     data = x.start()
     return data

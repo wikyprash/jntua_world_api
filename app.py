@@ -41,12 +41,23 @@ def result():
     """
     usage:
     .../allAttemptedResults?rollno=<>&course=<>&regulation=<>
+
+    eg:
+    .../allAttemptedResults?rollno=163g1a0505&course=b.tech&regulation=r15
+
     """
     rollno = request.args.get('rollno')
     course = request.args.get('course')
     regulation = request.args.get('regulation')
+    regulation = regulation.upper()
+    tmp = course[0:3]
+    t = tmp.upper()
+    course = t + course[3:]
+    regulation = regulation.upper()
     print(rollno, course, regulation)
+
     x = Automate(rollno=rollno, course=course, regulation=regulation)
+
     data = x.start()
     return data
 

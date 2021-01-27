@@ -195,6 +195,12 @@ class Automate:
         # driver = webdriver.Chrome(
         #     executable_path='res\\chromedriver.exe', options=options)
 
+        # options = Options()
+        # options.headless = True
+        # driver = webdriver.Chrome(
+        #     executable_path="/home/wikyprash/myFiles/MyWorkSpace/fapp/jntua_world_api/res/chromedriver",
+        #     options=options)
+
         urls = Automate.getUrls(course=self.course, regulation=self.regulation)
         print(urls)
         data = self.getData(driver, urls)

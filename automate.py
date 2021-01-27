@@ -15,10 +15,24 @@ class Automate:
     soup = BeautifulSoup(src, 'lxml')
     status = 'Invalid Hall Ticket Number for the Exam code you have selected.'
 
-    def __init__(self, rollno, course, regulation) -> None:
+    def __init__(self, rollno, course) -> None:
         self.rollno = rollno
         self.course = course
-        self.regulation = regulation
+        # self.regulation = regulation
+    
+        def set_regulation():
+            rollNo = self.rollno
+
+            _reg = int(rollNo[0:2])
+
+            if _reg >= 15 and _reg < 19:
+                _reg = "R15"
+                self.regulation = _reg
+            elif _reg >= 19:
+                _reg = "R19"
+                self.regulation = _reg
+        set_regulation()
+    
 
     @classmethod
     def getPublishedResults(cls):
@@ -135,14 +149,20 @@ class Automate:
         return user
 
     @staticmethod
-    def userResults(res):
+    def userResults(res, regulation):
         src = res
         soup = BeautifulSoup(src, 'lxml')
         headder = soup.find('h1', {'class': 'ui info message bxinfo'})
         table = soup.find('table', {'class': 'ui table segment'})
-        resl = ['Subject Code', 'Subject Name',  'Internals', 'Externals',
-                'Total Marks', 'Result Status', 'Credits', 'Grades']
-
+        if regulation == "R15":
+            resl = ['Subject Code', 'Subject Name',  'Internals', 'Externals',
+                    'Total Marks', 'Result Status', 'Credits', 'Grades']
+        elif regulation == "R19":
+            resl = ['Subject Code', 'Subject Name',  'Result Status', 'Grades',
+                    'Credits']
+        else:
+            resl = []
+            print("invalid course +++++++++++++++++") # log
         try:
             values = [i.text for i in table.findAll("td")]
             l = []
@@ -159,7 +179,7 @@ class Automate:
             return data
         except:
             # return {'title': headder.text.strip('Title : '), 'data': None}
-            return {'title': "--"}
+            pass
 
     def getData(self, driver, urls):
         try:
@@ -174,9 +194,12 @@ class Automate:
                     if len(ud['user']) == 2:
                         x.update(ud)
                         userGoten += 1
-                ur = Automate.userResults(res)
+                        
+                regulation = self.regulation
+                ur = Automate.userResults(res=res, regulation=regulation)
                 try:
-                    l.append(ur)
+                    if ur is not None: 
+                        l.append(ur)
                 except Exception as identifier:
                     pass
             x.update({'results': l})
@@ -195,11 +218,17 @@ class Automate:
         # driver = webdriver.Chrome(executable_path=os.environ.get(
         #     "CHROMEDRIVER_PATH"), options=options)
 
-        print("this driver for local")
+        # print("this driver for local")
+        # options = Options()
+        # options.headless = True
+        # driver = webdriver.Chrome(
+        #     executable_path='res/chromedriver', options=options)
+
         options = Options()
         options.headless = True
         driver = webdriver.Chrome(
-            executable_path='res/chromedriver', options=options)
+            executable_path="/home/wikyprash/myFiles/MyWorkSpace/fapp/jntua_world_api/res/chromedriver",
+            options=options)
 
         urls = Automate.getUrls(course=self.course, regulation=self.regulation)
         print(urls)
@@ -212,6 +241,9 @@ class Automate:
 
 if __name__ == "__main__":
     print("---")
-    x = Automate(rollno='193g1a0505', course="B.Tech", regulation="R19")
+    x = Automate(rollno="183g1a0505", course="B.Tech")
+    # x.setRegulation("R19")
     print('calling start')
+
+    
     print(x.start())

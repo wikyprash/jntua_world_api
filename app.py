@@ -45,6 +45,13 @@ def result():
     rollno = request.args.get('rollno')
     course = request.args.get('course')
     regulation = request.args.get('regulation')
+
+    regulation = regulation.upper()
+    tmp = course[0:3]
+    t = tmp.upper()
+    course = t + course[3:]
+    regulation = regulation.upper()
+    
     print("++++++++++")
     print(rollno, course, regulation)
     print("++++++++++")

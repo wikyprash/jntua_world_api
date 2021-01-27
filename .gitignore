@@ -1,5 +1,7 @@
 /.vscode
+/.idea
 /__pycache__
 /res
 /trash
 /apienv
+/myenv

@@ -77,7 +77,7 @@ def main(_hallTicektNo):
         if (results_data != None):
             resultObject = {"data" : results_data, "title" : results_title}
             resultsList.append(resultObject)
-            break
+            # break
             # print(resultObject)
 
     endResultsObject = {'results' : resultsList, 'user': studentDetails}

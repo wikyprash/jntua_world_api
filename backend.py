@@ -85,7 +85,7 @@ def main(_hallTicektNo):
                 studentDetailsNotFound = False
             resultObject = {"data" : results_data_list, "title" : results_data_title, 'resultsCode': _urlCode}
             resultsList.append(resultObject)
-            break
+            # break
             # print(resultObject)
     
     endResultsObject = {'results' : resultsList, 'user': studentDetails}

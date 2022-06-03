@@ -43,20 +43,31 @@ def getTitleData() -> str:
     return "Dummy title"
 
 
-def getResultsData(hallTicektNo, sessionToken, urlCode) -> list:
+def getResultsDataList(hallTicektNo, sessionToken, urlCode) -> list:
     """ fetches results info """
     res = _session.get(f'https://jntuaresults.ac.in/results/res.php?ht={hallTicektNo}&id={urlCode}&accessToken={sessionToken}').text
     xamAttempted = (res.find("Invalid Hall Ticket Number for the Exam code you have selected") != 38)
     if(xamAttempted):
-        s = BeautifulSoup(res, 'lxml')
-        h, [_, *d] = [i.text.lstrip() for i in s.find_all('th')], [[i.text for i in b.find_all('td')] for b in s.find_all('tr')]
-        results_data = [dict(zip(h, i)) for i in d]
-        results_data.pop() # removing last item since there is always an object object
-        return results_data
+        soup = BeautifulSoup(res, 'lxml')
+        table = soup.find('table', {'class': 'ui table segment'})
+        resl = ['Subject Code', 'Subject Name',  'Internals', 'Externals',
+                'Total Marks', 'Result Status', 'Credits', 'Grades']
+
+        values = [i.text for i in table.findAll("td")]
+        resultsDataList = []
+        _from = 0
+        _to = 8
+        for _ in range(len(values)//8):
+            x = {}
+            for i, j in zip(resl, values[_from:_to]):
+                x[i] = j
+            _from += 8
+            _to += 8
+            resultsDataList.append(x)
+        return resultsDataList
 
 
 def main(_hallTicektNo):
-    # _hallTicektNo = '163g1a0505'
     _sessionToken = getaccessToken()
     _allR15UrlCodes = getAllR15_UrlCodes()
     resultsList = []
@@ -65,20 +76,20 @@ def main(_hallTicektNo):
     for _urlCode in _allR15UrlCodes:
         print(progressCounter, "items left")
         progressCounter -= 1
-        results_data  = getResultsData(_hallTicektNo, _sessionToken, _urlCode)
-        results_title = getTitleData()
-
-        ### it will get called only till student details found ###  
-        if(studentDetailsNotFound):
-            studentDetails = getStudentDetailsData()
-            studentDetailsNotFound = False
-        ### it will get called only till student details found ###
-        
-        if (results_data != None):
-            resultObject = {"data" : results_data, "title" : results_title}
+        results_data_list  = getResultsDataList(_hallTicektNo, _sessionToken, _urlCode)
+        results_data_title = getTitleData()
+        studentDetails = {}
+        if (results_data_list != None):
+            if(studentDetailsNotFound): ## it will get called only till student details found ###  
+                studentDetails = getStudentDetailsData()
+                studentDetailsNotFound = False
+            resultObject = {"data" : results_data_list, "title" : results_data_title, 'resultsCode': _urlCode}
             resultsList.append(resultObject)
-            # break
+            break
             # print(resultObject)
-
+    
     endResultsObject = {'results' : resultsList, 'user': studentDetails}
     return endResultsObject
+
+
+# print(main('163g1a0505'))
